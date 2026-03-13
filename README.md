@@ -41,12 +41,12 @@
 
 - What is the key pain point? 
 
-The Head of Marketing wants to find out who the top YouTubers are in 2024 to decide on which YouTubers would be best to run marketing campaigns throughout the rest of the year.
+The Head of Marketing wants to find out who the top YouTubers in the USA are in 2024 to decide on which YouTubers would be best to run marketing campaigns throughout the rest of the year.
 
 
 - What is the ideal solution? 
 
-To create a dashboard that provides insights into the top UK YouTubers in 2024 that includes their 
+To create a dashboard that provides insights into the top US YouTubers in 2024 that includes their 
 - subscriber count
 - total views
 - total videos, and
@@ -56,7 +56,7 @@ This will help the marketing team make informed decisions about which YouTubers 
 
 ## User story 
 
-As the Head of Marketing, I want to use a dashboard that analyses YouTube channel data in the UK . 
+As the Head of Marketing, I want to use a dashboard that analyses YouTube channel data in the US . 
 
 This dashboard should allow me to identify the top performing channels based on metrics like subscriber base and average views. 
 
@@ -67,7 +67,7 @@ With this information, I can make more informed decisions about which Youtubers 
 
 - What data is needed to achieve our objective?
 
-We need data on the top UK YouTubers in 2024 that includes their 
+We need data on the top US YouTubers in 2024 that includes their 
 - channel names
 - total subscribers
 - total views
@@ -116,10 +116,8 @@ Some of the data visuals that may be appropriate in answering our questions incl
 3. Scorecards
 4. Horizontal bar chart 
 
+***[The initial design of the dashboard wireframe was done with Mokkup.ai]([https://www.mokkup.ai/)***
 
-
-
-![Dashboard-Mockup](assets/images/dashboard_mockup.png)
 
 
 ## Tools 
@@ -128,7 +126,8 @@ Some of the data visuals that may be appropriate in answering our questions incl
 | Tool | Purpose |
 | --- | --- |
 | Excel | Exploring the data |
-| SQL Server | Cleaning, testing, and analyzing the data |
+| Vs Code | IDE in cleaning, testing, and analyzing the data |
+| SQLite | the database used to host the data |
 | Power BI | Visualizing the data via interactive dashboards |
 | GitHub | Hosting the project documentation and version control |
 | Mokkup AI | Designing the wireframe/mockup of the dashboard | 
@@ -142,7 +141,7 @@ Some of the data visuals that may be appropriate in answering our questions incl
 
 1. Get the data
 2. Explore the data in Excel
-3. Load the data into SQL Server
+3. Load the data into SQLite in Vscode
 4. Clean the data with SQL
 5. Test the data with SQL
 6. Visualize the data in Power BI
@@ -235,22 +234,22 @@ FROM
 /*
 # 1. Create a view to store the transformed data
 # 2. Cast the extracted channel name as VARCHAR(100)
-# 3. Select the required columns from the top_uk_youtubers_2024 SQL table 
+# 3. Select the required columns from the top_us_youtubers_2024 SQL table 
 */
 
 -- 1.
-CREATE VIEW view_uk_youtubers_2024 AS
+CREATE VIEW us_youtubers_2024 AS
 
 -- 2.
 SELECT
-    CAST(SUBSTRING(NOMBRE, 1, CHARINDEX('@', NOMBRE) -1) AS VARCHAR(100)) AS channel_name, -- 2. 
+    CAST(SUBSTR(NAME, 1, INSTR(NAME, '@') - 1) AS VARCHAR(100)) AS channel_name,
     total_subscribers,
     total_views,
     total_videos
 
 -- 3.
 FROM
-    top_uk_youtubers_2024
+    us_channels
 
 ```
 
@@ -267,10 +266,10 @@ Here are the data quality tests conducted:
 # Count the total number of records (or rows) are in the SQL view
 */
 
-SELECT
+SELECT 
     COUNT(*) AS no_of_rows
 FROM
-    view_uk_youtubers_2024;
+     us_youtubers_2024;
 
 ```
 
@@ -285,13 +284,10 @@ FROM
 # Count the total number of columns (or fields) are in the SQL view
 */
 
-
 SELECT
-    COUNT(*) AS column_count
+     COUNT(*) AS no_of_columns
 FROM
-    INFORMATION_SCHEMA.COLUMNS
-WHERE
-    TABLE_NAME = 'view_uk_youtubers_2024'
+     pragma_table_info('us_youtubers_2024');
 ```
 ### Output 
 ![Column count check](assets/images/2_column_count_check.png)
@@ -307,12 +303,10 @@ WHERE
 
 -- 1.
 SELECT
-    COLUMN_NAME,
-    DATA_TYPE
+     name AS column_name,
+     type AS data_type
 FROM
-    INFORMATION_SCHEMA.COLUMNS
-WHERE
-    TABLE_NAME = 'view_uk_youtubers_2024';
+     pragma_table_info('us_youtubers_2024');
 ```
 ### Output
 ![Data type check](assets/images/3_data_type_check.png)
@@ -329,18 +323,18 @@ WHERE
 
 -- 1.
 SELECT
-    channel_name,
-    COUNT(*) AS duplicate_count
+     channel_name,
+     COUNT(*) AS count
 FROM
-    view_uk_youtubers_2024
+     us_youtubers_2024
 
 -- 2.
 GROUP BY
-    channel_name
+     channel_name
 
 -- 3.
 HAVING
-    COUNT(*) > 1;
+     COUNT(*) > 1;
 ```
 ### Output
 ![Duplicate count check](assets/images/4_duplicate_records_check.png)
@@ -352,9 +346,9 @@ HAVING
 
 - What does the dashboard look like?
 
-![GIF of Power BI Dashboard](assets/images/top_uk_youtubers_2024.gif)
+![GIF of Power BI Dashboard](assets/images/top_US-youtubers_2024.gif)
 
-This shows the Top UK Youtubers in 2024 so far. 
+This shows the Top US Youtubers in 2024 so far. 
 
 
 ## DAX Measures
@@ -363,7 +357,7 @@ This shows the Top UK Youtubers in 2024 so far.
 ```sql
 Total Subscribers (M) = 
 VAR million = 1000000
-VAR sumOfSubscribers = SUM(view_uk_youtubers_2024[total_subscribers])
+VAR sumOfSubscribers = SUM(view_us_youtubers_2024[total_subscribers])
 VAR totalSubscribers = DIVIDE(sumOfSubscribers,million)
 
 RETURN totalSubscribers
@@ -374,7 +368,7 @@ RETURN totalSubscribers
 ```sql
 Total Views (B) = 
 VAR billion = 1000000000
-VAR sumOfTotalViews = SUM(view_uk_youtubers_2024[total_views])
+VAR sumOfTotalViews = SUM(view_us_youtubers_2024[total_views])
 VAR totalViews = ROUND(sumOfTotalViews / billion, 2)
 
 RETURN totalViews
@@ -384,7 +378,7 @@ RETURN totalViews
 ### 3. Total Videos
 ```sql
 Total Videos = 
-VAR totalVideos = SUM(view_uk_youtubers_2024[total_videos])
+VAR totalVideos = SUM(view_us_youtubers_2024[total_videos])
 
 RETURN totalVideos
 
@@ -393,8 +387,8 @@ RETURN totalVideos
 ### 4. Average Views Per Video (M)
 ```sql
 Average Views per Video (M) = 
-VAR sumOfTotalViews = SUM(view_uk_youtubers_2024[total_views])
-VAR sumOfTotalVideos = SUM(view_uk_youtubers_2024[total_videos])
+VAR sumOfTotalViews = SUM(view_us_youtubers_2024[total_views])
+VAR sumOfTotalVideos = SUM(view_us_youtubers_2024[total_videos])
 VAR  avgViewsPerVideo = DIVIDE(sumOfTotalViews,sumOfTotalVideos, BLANK())
 VAR finalAvgViewsPerVideo = DIVIDE(avgViewsPerVideo, 1000000, BLANK())
 
@@ -406,8 +400,8 @@ RETURN finalAvgViewsPerVideo
 ### 5. Subscriber Engagement Rate
 ```sql
 Subscriber Engagement Rate = 
-VAR sumOfTotalSubscribers = SUM(view_uk_youtubers_2024[total_subscribers])
-VAR sumOfTotalVideos = SUM(view_uk_youtubers_2024[total_videos])
+VAR sumOfTotalSubscribers = SUM(view_us_youtubers_2024[total_subscribers])
+VAR sumOfTotalVideos = SUM(view_us_youtubers_2024[total_videos])
 VAR subscriberEngRate = DIVIDE(sumOfTotalSubscribers, sumOfTotalVideos, BLANK())
 
 RETURN subscriberEngRate 
@@ -418,8 +412,8 @@ RETURN subscriberEngRate
 ### 6. Views per subscriber
 ```sql
 Views Per Subscriber = 
-VAR sumOfTotalViews = SUM(view_uk_youtubers_2024[total_views])
-VAR sumOfTotalSubscribers = SUM(view_uk_youtubers_2024[total_subscribers])
+VAR sumOfTotalViews = SUM(view_us_youtubers_2024[total_views])
+VAR sumOfTotalSubscribers = SUM(view_us_youtubers_2024[total_subscribers])
 VAR viewsPerSubscriber = DIVIDE(sumOfTotalViews, sumOfTotalSubscribers, BLANK())
 
 RETURN viewsPerSubscriber 
@@ -450,25 +444,25 @@ Here are the key questions we need to answer for our marketing client:
 
 | Rank | Channel Name         | Subscribers (M) |
 |------|----------------------|-----------------|
-| 1    | NoCopyrightSounds    | 33.60           |
-| 2    | DanTDM               | 28.60           |
-| 3    | Dan Rhodes           | 26.50           |
-| 4    | Miss Katy            | 24.50           |
-| 5    | Mister Max           | 24.40           |
-| 6    | KSI                  | 24.10           |
-| 7    | Jelly                | 23.50           |
-| 8    | Dua Lipa             | 23.30           |
-| 9    | Sidemen              | 21.00           |
-| 10   | Ali-A                | 18.90           |
+| 1    | MrBeast			  | 470.0           |
+| 2    | T-series             | 310.0           |
+| 3    | Cocomelon-Nursery    | 200.0           |
+| 4    | SET India            | 188.0           |
+| 5    | Vlad & Niki          | 149.0           |
+| 6    | Kids Diana Show      | 138.0           |
+| 7    | Like Nastya          | 131.0           |
+| 8    | Zee Music            | 122.0           |
+| 9    | WWE                  | 112.0           |
+| 10   | pweDiePie            | 110.0           |
 
 
 ### 2. Which 3 channels have uploaded the most videos?
 
 | Rank | Channel Name    | Videos Uploaded |
 |------|-----------------|-----------------|
-| 1    | GRM Daily       | 14,696          |
-| 2    | Manchester City | 8,248           |
-| 3    | Yogscast        | 6,435           |
+| 1    | Aaj Tak      	 | 610,121         |
+| 2    | ABP News 		 | 548,576         |
+| 3    | TEDx Talks      | 256,179         |
 
 
 
@@ -477,27 +471,27 @@ Here are the key questions we need to answer for our marketing client:
 
 | Rank | Channel Name | Total Views (B) |
 |------|--------------|-----------------|
-| 1    | DanTDM       | 19.78           |
-| 2    | Dan Rhodes   | 18.56           |
-| 3    | Mister Max   | 15.97           |
+| 1    | T-Series     | 333.55          |
+| 2    | Cocomelon Nur| 218.67          |
+| 3    | SET India    | 185.20          |
 
 
 ### 4. Which 3 channels have the highest average views per video?
 
 | Channel Name | Averge Views per Video (M) |
 |--------------|-----------------|
-| Mark Ronson  | 32.27           |
-| Jessie J     | 5.97            |
-| Dua Lipa     | 5.76            |
+| Bad Bunny    | 241.73          |
+| Bruno Mars   | 207.69          |
+| EminemMusic  | 175.18          |
 
 
 ### 5. Which 3 channels have the highest views per subscriber ratio?
 
 | Rank | Channel Name       | Views per Subscriber        |
 |------|-----------------   |---------------------------- |
-| 1    | GRM Daily          | 1185.79                     |
-| 2    | Nickelodeon        | 1061.04                     |
-| 3    | Disney Junior UK   | 1031.97                     |
+| 1    | Ryan's World       | 1,571.69                    |
+| 2    | Toys and Colors    | 1,416.29                    |
+| 3    | Sony SAB           | 1,338.25                    |
 
 
 
@@ -505,9 +499,9 @@ Here are the key questions we need to answer for our marketing client:
 
 | Rank | Channel Name    | Subscriber Engagement Rate  |
 |------|-----------------|---------------------------- |
-| 1    | Mark Ronson     | 343,000                     |
-| 2    | Jessie J        | 110,416.67                  |
-| 3    | Dua Lipa        | 104,954.95                  |
+| 1    | Mrbeast         | 494,216.61                  |
+| 2    | Bruno Mars      | 360,000.00                  |
+| 3    | Billie Eilish   | 317,582.42                  |
 
 
 
@@ -530,34 +524,34 @@ For this analysis, we'll prioritize analysing the metrics that are important in 
 
 Campaign idea = product placement 
 
-1. NoCopyrightSounds 
-- Average views per video = 6.92 million
+1. MrBeast 
+- Average views per video = 119.86 million
 - Product cost = $5
-- Potential units sold per video = 6.92 million x 2% conversion rate = 138,400 units sold
-- Potential revenue per video = 138,400 x $5 = $692,000
-- Campaign cost (one-time fee) = $50,000
-- **Net profit = $692,000 - $50,000 = $642,000**
+- Potential units sold per video = 119.86 million x 2% conversion rate = 2,397,200 units sold
+- Potential revenue per video = 2,397,200 x $5 = $11,986,000
+- Campaign cost (one-time fee) = $1,500,000
+- **Net profit = $11,986,000 - $1,500,000 = $10,486,000**
 
-b. DanTDM
+b. T-series
 
-- Average views per video = 5.34 million
+- Average views per video = 13.02 million
 - Product cost = $5
-- Potential units sold per video = 5.34 million x 2% conversion rate = 106,800 units sold
-- Potential revenue per video = 106,800 x $5 = $534,000
-- Campaign cost (one-time fee) = $50,000
-- **Net profit = $534,000 - $50,000 = $484,000**
+- Potential units sold per video = 13.02 million x 2% conversion rate = 260,400 units sold
+- Potential revenue per video = 260,400 x $5 = $1,302,000
+- Campaign cost (one-time fee) = $1,500,000
+- **Net profit/(loss) = $1,302,000 - $1,500,000 = ($198,000)**
 
-c. Dan Rhodes
+c. Cocomelon - Nursery Rhymes
 
-- Average views per video = 11.15 million
+- Average views per video = 113.01 million
 - Product cost = $5
-- Potential units sold per video = 11.15 million x 2% conversion rate = 223,000 units sold
-- Potential revenue per video = 223,000 x $5 = $1,115,000
-- Campaign cost (one-time fee) = $50,000
-- **Net profit = $1,115,000 - $50,000 = $1,065,000**
+- Potential units sold per video = 113.01 million x 2% conversion rate = 2,260,200 units sold
+- Potential revenue per video = 2,260,200 x $5 = $11,301,000
+- Campaign cost (one-time fee) = $1,500,000
+- **Net profit = $1,115,000 - $1,500,000 = $9,801,000**
 
 
-Best option from category: Dan Rhodes
+Best option from category: Mr Beast
 
 
 #### SQL query 
@@ -575,41 +569,42 @@ Best option from category: Dan Rhodes
 
 
 -- 1. 
-DECLARE @conversionRate FLOAT = 0.02;		-- The conversion rate @ 2%
-DECLARE @productCost FLOAT = 5.0;			-- The product cost @ $5
-DECLARE @campaignCost FLOAT = 50000.0;		-- The campaign cost @ $50,000	
+-- 1. Variables are inlined as literals (SQLite does not support DECLARE)
+-- conversationRate = 0.02   (2% conversion rate)
+-- productCost      = 5.00   ($5.00 product cost)
+-- campaignCost     = 1500000.00  ($1,500,000 campaign cost)
 
 
 -- 2.  
 WITH ChannelData AS (
-    SELECT 
+    SELECT
         channel_name,
         total_views,
         total_videos,
-        ROUND((CAST(total_views AS FLOAT) / total_videos), -4) AS rounded_avg_views_per_video
-    FROM 
-        youtube_db.dbo.view_uk_youtubers_2024
-)
+        ROUND((CAST(total_views AS REAL) / total_videos), -4) AS avg_views_per_video
+    FROM
+        us_youtubers_2024
+    )
 
 -- 3. 
-SELECT 
+SELECT
     channel_name,
-    rounded_avg_views_per_video,
-    (rounded_avg_views_per_video * @conversionRate) AS potential_units_sold_per_video,
-    (rounded_avg_views_per_video * @conversionRate * @productCost) AS potential_revenue_per_video,
-    ((rounded_avg_views_per_video * @conversionRate * @productCost) - @campaignCost) AS net_profit
-FROM 
+    avg_views_per_video,
+    ROUND(avg_views_per_video * 0.02, -4) AS potential_units_sold_per_video,
+    ROUND(avg_views_per_video * 0.02 * 5.00, -4) AS potential_revenue_per_video,
+    ROUND((avg_views_per_video * 0.02 * 5.00) - 1500000.00, -4) AS net_profit_per_video
+FROM
     ChannelData
 
 
 -- 4. 
 WHERE 
-    channel_name in ('NoCopyrightSounds', 'DanTDM', 'Dan Rhodes')    
+    channel_name IN ('MrBeast', 'T-Series', 'Cocomelon - Nursery Rhymes')   
 
 
 -- 5.  
-ORDER BY
-	net_profit DESC
+ORDER BY 
+    net_profit_per_video DESC;
 
 ```
 
@@ -623,38 +618,39 @@ ORDER BY
 
 Campaign idea = sponsored video series  
 
-1. GRM Daily
-- Average views per video = 510,000
+1. **Aaj Tak**
+- Average views per video = 70,000
 - Product cost = $5
-- Potential units sold per video = 510,000 x 2% conversion rate = 10,200 units sold
-- Potential revenue per video = 10,200 x $5= $51,000
-- Campaign cost (11-videos @ $5,000 each) = $55,000
-- **Net profit = $51,000 - $55,000 = -$4,000 (potential loss)**
+- Potential units sold per video = 70,000 x 2% conversion rate = 1,400 units sold
+- Potential revenue per video = 1,400 x $5= $7,000
+- Campaign cost (11-videos @ $141K each) = $1,550,000
+- **Net profit (loss) = $7,000 - $1,550,000 = -$1,543,000 (potential loss)**
 
-b. **Manchester City**
+b. **ABP News**
 
-- Average views per video = 240,000
+- Average views per video = 50,000
 - Product cost = $5
-- Potential units sold per video = 240,000 x 2% conversion rate = 4,800 units sold
-- Potential revenue per video = 4,800 x $5= $24,000
-- Campaign cost (11-videos @ $5,000 each) = $55,000
-- **Net profit = $24,000 - $55,000 = -$31,000 (potential loss)**
+- Potential units sold per video = 50,000 x 2% conversion rate = 1,000 units sold
+- Potential revenue per video = 1,000 x $5= $5,000
+- Campaign cost (11-videos @ $141K each) = $1,550,000
+- **Net profit (loss) = $1,550,000 - $5,000 = -$1,545,000 (potential loss)**
 
 b. **Yogscast**
 
-- Average views per video = 710,000
+- Average views per video = 30,000
 - Product cost = $5
-- Potential units sold per video = 710,000 x 2% conversion rate = 14,200 units sold
-- Potential revenue per video = 14,200 x $5= $71,000
-- Campaign cost (11-videos @ $5,000 each) = $55,000
-- **Net profit = $71,000 - $55,000 = $16,000 (profit)**
+- Potential units sold per video = 30,000 x 2% conversion rate = 600 units sold
+- Potential revenue per video = 600 x $5= $3,000
+- Campaign cost (11-videos @ $141K each) = $1,550,000
+- **Net profit (loss) = $71,000 - $1,550,000 = -$11,547,000 (potential loss)**
 
 
-Best option from category: Yogscast
+Best option from category: None
 
 #### SQL query 
 ```sql
-/* 
+/*
+if using SQL Server
 # 1. Define variables
 # 2. Create a CTE that rounds the average views per video
 # 3. Select the columns you need and create calculated columns from existing ones
@@ -664,10 +660,10 @@ Best option from category: Yogscast
 
 
 -- 1.
-DECLARE @conversionRate FLOAT = 0.02;           -- The conversion rate @ 2%
-DECLARE @productCost FLOAT = 5.0;               -- The product cost @ $5
-DECLARE @campaignCostPerVideo FLOAT = 5000.0;   -- The campaign cost per video @ $5,000
-DECLARE @numberOfVideos INT = 11;               -- The number of videos (11)
+DECLARE @conversionRate FLOAT = 0.02;           	-- The conversion rate @ 2%
+DECLARE @productCost FLOAT = 5.0;               	-- The product cost @ $5
+DECLARE @campaignCostPerVideo FLOAT = 1,550,000.0;	-- The campaign cost per video @ $141k
+DECLARE @numberOfVideos INT = 11;               	-- The number of videos (11)
 
 
 -- 2.
@@ -678,7 +674,7 @@ WITH ChannelData AS (
         total_videos,
         ROUND((CAST(total_views AS FLOAT) / total_videos), -4) AS rounded_avg_views_per_video
     FROM
-        youtube_db.dbo.view_uk_youtubers_2024
+        us_youtubers_2024
 )
 
 
@@ -695,7 +691,7 @@ FROM
 
 -- 4.
 WHERE
-    channel_name IN ('GRM Daily', 'Man City', 'YOGSCAST Lewis & Simon ')
+    channel_name IN ('Aaj', 'ABP NEWS', 'TEDx Talks ')
 
 
 -- 5.
@@ -714,34 +710,34 @@ ORDER BY
 
 Campaign idea = Influencer marketing 
 
-a. DanTDM
+a. T-Series
 
-- Average views per video = 5.34 million
+- Average views per video = 13.01 million
 - Product cost = $5
-- Potential units sold per video = 5.34 million x 2% conversion rate = 106,800 units sold
-- Potential revenue per video = 106,800 x $5 = $534,000
-- Campaign cost (3-month contract) = $130,000
-- **Net profit = $534,000 - $130,000 = $404,000**
+- Potential units sold per video = 13.02 million x 2% conversion rate = 260,400 units sold
+- Potential revenue per video = 260,400 x $5 = $1,302,000
+- Campaign cost (8-month contract) = $500,000
+- **Net profit = $1,302,000 - $500,000 = $802,000**
 
-b. Dan Rhodes
+b. Cocomelon
 
-- Average views per video = 11.15 million
+- Average views per video = 113.01 million
 - Product cost = $5
-- Potential units sold per video = 11.15 million x 2% conversion rate = 223,000 units sold
-- Potential revenue per video = 223,000 x $5 = $1,115,000
-- Campaign cost (3-month contract) = $130,000
-- **Net profit = $1,115,000 - $130,000 = $985,000**
+- Potential units sold per video = 113.01 million x 2% conversion rate = 2,260,200 units sold
+- Potential revenue per video = 2,260,200 x $5 = $11,301,000
+- Campaign cost (8-month contract) = $500,000
+- **Net profit = $11,301,000 - $500,000 = $10,801,000**
 
-c. Mister Max
+c. SET India
 
-- Average views per video = 14.06 million
+- Average views per video = 1.13 million
 - Product cost = $5
-- Potential units sold per video = 14.06 million x 2% conversion rate = 281,200 units sold
-- Potential revenue per video = 281,200 x $5 = $1,406,000
-- Campaign cost (3-month contract) = $130,000
-- **Net profit = $1,406,000 - $130,000 = $1,276,000**
+- Potential units sold per video = 1.13 million x 2% conversion rate = 22,600 units sold
+- Potential revenue per video = 22,600 x $5 = $113,000
+- Campaign cost (8-month contract) = $500,000
+- **Net profit = $113,000 - $500,000 = -$387,000 (potential losses)**
 
-Best option from category: Mister Max
+Best option from category: Cocomelon
 
 
 
@@ -760,7 +756,7 @@ Best option from category: Mister Max
 -- 1.
 DECLARE @conversionRate FLOAT = 0.02;        -- The conversion rate @ 2%
 DECLARE @productCost MONEY = 5.0;            -- The product cost @ $5
-DECLARE @campaignCost MONEY = 130000.0;      -- The campaign cost @ $130,000
+DECLARE @campaignCost MONEY = 500000.0;      -- The campaign cost @ $500,000
 
 
 
@@ -772,7 +768,7 @@ WITH ChannelData AS (
         total_videos,
         ROUND(CAST(total_views AS FLOAT) / total_videos, -4) AS avg_views_per_video
     FROM
-        youtube_db.dbo.view_uk_youtubers_2024
+        us_youtubers_2024
 )
 
 
@@ -789,7 +785,7 @@ FROM
 
 -- 4.
 WHERE
-    channel_name IN ('Mister Max', 'DanTDM', 'Dan Rhodes')
+    channel_name IN ('T-Series', 'Cocomelon Nursery-Rhymes', 'SET India')
 
 
 -- 5.
@@ -811,10 +807,10 @@ ORDER BY
 We discovered that 
 
 
-1. NoCopyrightSOunds, Dan Rhodes and DanTDM are the channnels with the most subscribers in the UK
-2. GRM Daily, Man City and Yogscast are the channels with the most videos uploaded
-3. DanTDM, Dan RHodes and Mister Max are the channels with the most views
-4. Entertainment channels are useful for broader reach, as the channels posting consistently on their platforms and generating the most engagement are focus on entertainment and music 
+1. Mr Beast, T-Series and Cocomelon-Nursery Rhymes are the channnels with the most subscribers in the US
+2. Aaj Tak, ABP NEWS and TEDx Talks are the channels with the most videos uploaded
+3. T-Series, Cocomelon-Nursey-Rhymes and SET India are the channels with the most views
+4. Entertainment channels are useful for broader reach, as the channels posting consistently on their platforms and generating the most engagement are focus on entertainment and drama 
 
 
 
@@ -823,34 +819,31 @@ We discovered that
 
 - What do you recommend based on the insights gathered? 
   
-1. Dan Rhodes is the best YouTube channel to collaborate with if we want to maximize visbility because this channel has the most YouTube subscribers in the UK
-2. Although GRM Daily, Man City and Yogcasts are regular publishers on YouTube, it may be worth considering whether collaborating with them with the current budget caps are worth the effort, as the potential return on investments is significantly lower compared to the other channels.
-3. Mister Max is the best YouTuber to collaborate with if we're interested in maximizing reach, but collaborating with DanTDM and Dan Rhodes may be better long-term options considering the fact that they both have large subscriber bases and are averaging significantly high number of views.
-4. The top 3 channels to form collaborations with are NoCopyrightSounds, DanTDM and Dan Rhodes based on this analysis, because they attract the most engagement on their channels consistently.
+1. Mr Beast is the best YouTube channel to collaborate with if we want to maximize visbility because this channel has the most YouTube subscribers in the US
+2. Although Aaj Tak, ABP News and TEDx Talks are regular publishers on YouTube, it may be worth considering whether collaborating with them with the current budget caps are worth the effort, as the potential return on investments is significantly lower compared to the other channels.
+3. Cocomelon-Nursey Rhymes is the best YouTube platform to collaborate with if we're interested in maximizing reach, but collaborating with T-Series and SET India may be better long-term options considering the fact that they both have large subscriber bases and are averaging significantly high number of views.
+4. The top 2 channels to form collaborations with are Mr Beast and Cocomelon-Nursery Rhymes based on this analysis, because they attract the most engagement on their channels consistently.
+5. We may have to tweak our advertisement through the Cocomelon platform to fit younger kids and ensure that our advertisement via that channel is appropriate for the target audience on that platform.
 
 
 ### Potential ROI 
 - What ROI do we expect if we take this course of action?
 
-1. Setting up a collaboration deal with Dan Rhodes would make the client a net profit of $1,065,000 per video
-2. An influencer marketing contract with Mister Max can see the client generate a net profit of $1,276,000
-3. If we go with a product placement campaign with DanTDM, this could  generate the client approximately $484,000 per video. If we advance with an influencer marketing campaign deal instead, this would make the client a one-off net profit of $404,000.
-4. NoCopyrightSounds could profit the client $642,000 per video too (which is worth considering) 
-
-
+1. Setting up a collaboration deal with MrBeast would make the client a net profit of $10,486,000
+2. An marketing contract with Cocomelon-Nursey Rhymes can see the client generate a net profit of $11,301,000
 
 
 ### Action plan
 - What course of action should we take and why?
 
-Based on our analysis, we beieve the best channel to advance a long-term partnership deal with to promote the client's products is the Dan Rhodes channel. 
+Based on our analysis, we beieve the best channel to advance a long-term partnership deal with to promote the client's products is the Mr Beast channel. 
 
-We'll have conversations with the marketing client to forecast what they also expect from this collaboration. Once we observe we're hitting the expected milestones, we'll advance with potential partnerships with DanTDM, Mister Max and NoCopyrightSounds channels in the future.   
+We'll have conversations with the marketing client to forecast what they also expect from this collaboration. Once we observe we're hitting the expected milestones, we'll advance with potential partnerships with Cocomelon Nursery-Rhymes, T-series and SET India channels in the future.   
 
 - What steps do we take to implement the recommended decisions effectively?
 
 
-1. Reach out to the teams behind each of these channels, starting with Dan Rhodes
+1. Reach out to the teams behind each of these channels, starting with Mr Beast
 2. Negotiate contracts within the budgets allocated to each marketing campaign
 3. Kick off the campaigns and track each of their performances against the KPIs
 4. Review how the campaigns have gone, gather insights and optimize based on feedback from converted customers and each channel's audiences 
