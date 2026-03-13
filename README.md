@@ -212,19 +212,20 @@ And here is a tabular representation of the expected schema for the clean data:
 
 ```sql
 /*
-# 1. Select the required columns
-# 2. Extract the channel name from the 'NOMBRE' column
+Data cleaning steps
+
+1. Remove unncessary columns by only slecting the ones we need
+2. Extract the YouTube channel names from the first column.
+3. Rename the column names. 
 */
 
--- 1.
-SELECT
-    SUBSTRING(NOMBRE, 1, CHARINDEX('@', NOMBRE) -1) AS channel_name,  -- 2.
+SELECT 
+    NAME,
     total_subscribers,
     total_views,
     total_videos
-
 FROM
-    top_uk_youtubers_2024
+    us_channels
 ```
 
 
