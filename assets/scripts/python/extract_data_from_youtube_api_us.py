@@ -59,6 +59,8 @@ combined_df.to_csv('updated_youtube_data_us.csv', index=False)
 print(f"Done. {len(channel_stats)} channels matched out of {len(unique_channel_ids)} unique IDs.")
 print(combined_df.head(10))
 
+
+# This portion of the code is to import it into SQLite (optional, if not using SQLlite)
 from sqlalchemy import create_engine
 
 engine = create_engine('sqlite:///youtube_data.db')
