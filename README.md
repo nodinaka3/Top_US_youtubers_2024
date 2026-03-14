@@ -634,16 +634,16 @@ b. **ABP News**
 - Potential units sold per video = 50,000 x 2% conversion rate = 1,000 units sold
 - Potential revenue per video = 1,000 x $5= $5,000
 - Campaign cost (11-videos @ $141K each) = $1,550,000
-- **Net profit (loss) = $1,550,000 - $5,000 = -$1,545,000 (potential loss)**
+- **Net profit (loss) = $5,000 - $1,550,000 = -$1,545,000 (potential loss)**
 
-b. **Yogscast**
+b. **TEDx Talks**
 
 - Average views per video = 30,000
 - Product cost = $5
 - Potential units sold per video = 30,000 x 2% conversion rate = 600 units sold
 - Potential revenue per video = 600 x $5= $3,000
 - Campaign cost (11-videos @ $141K each) = $1,550,000
-- **Net profit (loss) = $71,000 - $1,550,000 = -$11,547,000 (potential loss)**
+- **Net profit (loss) = $3,000 - $1,550,000 = -$1,547,000 (potential loss)**
 
 
 Best option from category: None
